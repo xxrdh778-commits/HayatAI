@@ -2,7 +2,6 @@ package com.hayat.ai
 
 import android.Manifest
 import android.os.Bundle
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.activity.ComponentActivity
@@ -20,14 +19,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.hayat.ai.settings.SettingsScreen
-import com.hayat.ai.voice.VoiceRecognizer
 
 class MainActivity : ComponentActivity() {
 
@@ -58,20 +55,6 @@ fun HayatAIApp(onRequestMicrophonePermission: () -> Unit = {}) {
     var isListening by remember { mutableStateOf(false) }
 
     val context = androidx.compose.ui.platform.LocalContext.current
-    val voiceRecognizer = remember {
-        VoiceRecognizer(
-            context = context,
-            onResult = { transcript = it; isListening = false },
-            onPartialResult = { transcript = it; isListening = true },
-            onError = { transcript = "Voice error: $it"; isListening = false }
-        )
-    }
-
-    DisposableEffect(voiceRecognizer) {
-        onDispose {
-            voiceRecognizer.destroy()
-        }
-    }
 
     MaterialTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
@@ -121,27 +104,21 @@ fun HayatAIApp(onRequestMicrophonePermission: () -> Unit = {}) {
 
                     Button(
                         onClick = {
-                            if (com.hayat.ai.voice.MicrophonePermission.isGranted(context)) {
-                                isListening = true
-                                    voiceRecognizer.start()
-                            } else {
-                                onRequestMicrophonePermission()
-                            }
+                            onRequestMicrophonePermission()
                         }
                     ) {
                         Text("🎙 Start Listening")
                     }
 
-                       Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                       TextButton(
-                           onClick = {
-                               voiceRecognizer.cancel()
-                               isListening = false
-                           }
-                       ) {
-                           Text("Stop Listening")
-                       }
+                    TextButton(
+                        onClick = {
+                            isListening = false
+                        }
+                    ) {
+                        Text("Stop Listening")
+                    }
 
                     Spacer(modifier = Modifier.height(24.dp))
 
